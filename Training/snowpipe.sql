@@ -1,0 +1,24 @@
+
+USE WAREHOUSE WH_DEV;
+
+USE ROLE SF_DEV_WRITE; 
+
+SELECT * FROM USERS;
+
+TRUNCATE TABLE USERS;
+
+SHOW STAGES;
+
+CREATE OR REPLACE PIPE USERS_PIPE AS  // CREATING PIPES FOR CONTINOUSLY STREAMING FILE
+COPY INTO USERS FROM @STG_SUNCARE_TEST_AZURE
+FILE_FORMAT = (TYPE = CSV);
+
+LIST@STG_SUNCARE_TEST_AZURE;
+
+SHOW PIPES;
+
+SELECT COUNT(*) FROM USERS; // to see how much record it has after running users pipe refresh and queued in the
+
+SELECT system$pipe_status('USERS_PIPE'); //see users execution state
+
+ALTER PIPE USERS_PIPE REFRESH;  // Sent the file to table USERS fro external stages

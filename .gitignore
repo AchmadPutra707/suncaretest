@@ -1,0 +1,9 @@
+*.json
+*.env
+*.txt
+*.p8
+*.csv
+/dev
+/__pycache__
+/.venv
+*.pyc

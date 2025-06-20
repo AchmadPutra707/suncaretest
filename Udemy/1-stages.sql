@@ -1,0 +1,59 @@
+USE DATABASE SUNCARE_TEST;
+
+USE SCHEMA KEYLOST;
+
+USE WAREHOUSE WH_DEV;
+
+USE ROLE SYSADMIN;
+
+CREATE OR REPLACE STAGE SUNCARE_TEST.KEYLOST.external_aws_stage
+    url='s3://bucketsnowflakes3'
+    credentials=(aws_key_id='ABCD_DUMMY_ID' aws_secret_key='1234abcd_key');
+
+ALTER STAGE external_aws_stage
+SET credentials=(aws_key_id='XYZ_DUMMY_ID' aws_secret_key='987xyz');
+
+--CREATE USING PUBLICLY ACTUAL BUCKET--
+CREATE OR REPLACE STAGE SUNCARE_TEST.KEYLOST.external_aws_stage
+    url='s3://bucketsnowflakes3';
+
+
+--Create File Formats--
+
+CREATE OR REPLACE FILE FORMAT MY_CSV_FF
+TYPE = CSV
+SKIP_HEADER = 1
+FIELD_OPTIONALLY_ENCLOSED_BY='"'
+EMPTY_FIELD_AS_NULL = true
+COMPRESSION = NONE
+FIELD_DELIMITER=','
+;
+
+CREATE OR REPLACE FILE FORMAT MY_JSON_FF
+TYPE = JSON
+;
+
+--Stages checks
+
+DESC STAGE SUNCARE_TEST.KEYLOST.external_aws_stage;
+
+LIST @external_aws_stage;
+
+---Create Table
+
+CREATE OR REPLACE TABLE SUNCARE_TEST.KEYLOST.ORDERS (
+    ORDER_ID VARCHAR(30),
+    AMOUNT INT,
+    PROFIT INT,
+    QUANTITY INT,
+    CATEGORY VARCHAR(30),
+    SUBCATEGORY VARCHAR(30));
+
+COPY INTO SUNCARE_TEST.KEYLOST.ORDERS
+    FROM @external_aws_stage
+    FILE_FORMAT = MY_CSV_FF
+    FILES = ('OrderDetails.csv')
+;
+
+SELECT * FROM SUNCARE_TEST.KEYLOST.ORDERS;
+
